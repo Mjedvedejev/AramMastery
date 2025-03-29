@@ -1,0 +1,2 @@
+API_KEY = "RGAPI-5b76e8cf-8b5b-4f06-9425-ae98284088f5"
+PUUID = "tpXMBk1cTMnwjklLzDQT67iwUGqkwuboWsE9QYUbiH6Z6ekIvdNaOwHqyBZ_5FLjX6awwbrBuCCG6Q" #Janša Reroll#SDS
