@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 import requests
 import json
-from api_values import API_KEY, PUUID
+from api_values import API_KEY
+from SummonerDriver import get_RiotID
 
 
 @dataclass
@@ -70,29 +71,29 @@ class Challenge:
         self.completed_count = 0
         self.uncompleted_count = 0
 
-    def get(self):
+    def get(self, puuid):
         """ Fetch & process a single challenge """
-        self.fetch_all_data()
-        self.process_single_challenge(self.challenge_name)
+        self.fetch_all_data(puuid)
+        self.process_single_challenge(self.challenge_name, puuid)
 
-    def get_completed(self):
+    def get_completed(self, puuid):
         """ Fetches & processes only completed ARAM challenges and counts them """
-        self.fetch_all_data()
+        self.fetch_all_data(puuid)
         self.completed_count = 0
-        self.process_completed_challenges()
+        self.process_completed_challenges(puuid)
         print(f"✅ Completed Challenges: {self.completed_count}")
 
-    def get_uncompleted(self):
+    def get_uncompleted(self,puuid):
         """ Fetches & processes only uncompleted ARAM challenges and counts them """
-        self.fetch_all_data()
+        self.fetch_all_data(puuid)
         self.uncompleted_count = 0
-        self.process_uncompleted_challenges()
+        self.process_uncompleted_challenges(puuid)
         print(f"❌ Uncompleted Challenges: {self.uncompleted_count}")
 
-    def fetch_all_data(self):
+    def fetch_all_data(self, puuid):
         """ Fetches challenge configs & user stats in a single API request """
         all_challenges_url = f"https://euw1.api.riotgames.com/lol/challenges/v1/challenges/config?api_key={API_KEY}"
-        personal_stats_url = f"https://euw1.api.riotgames.com/lol/challenges/v1/player-data/{PUUID}?api_key={API_KEY}"
+        personal_stats_url = f"https://euw1.api.riotgames.com/lol/challenges/v1/player-data/{puuid}?api_key={API_KEY}"
 
         all_challenges_response = requests.get(all_challenges_url)
         personal_stats_response = requests.get(personal_stats_url)
@@ -104,7 +105,7 @@ class Challenge:
             print("Error: API Response is not valid JSON")
             return
 
-    def process_completed_challenges(self):
+    def process_completed_challenges(self, puuid):
         """ Processes and counts all completed ARAM challenges """
         if not self.all_challenges_data or not self.personal_stats_data:
             print("Error: Data not fetched properly.")
@@ -119,9 +120,9 @@ class Challenge:
                 )
                 if personal_stats and personal_stats["level"] in ["MASTER", "GRANDMASTER", "CHALLENGER"]:
                     self.completed_count += 1
-                    self.process_single_challenge(challenge_name)
+                    self.process_single_challenge(challenge_name, puuid)
 
-    def process_uncompleted_challenges(self):
+    def process_uncompleted_challenges(self, puuid):
         """ Processes and counts all uncompleted ARAM challenges """
         if not self.all_challenges_data or not self.personal_stats_data:
             print("Error: Data not fetched properly.")
@@ -134,11 +135,17 @@ class Challenge:
                     (item for item in self.personal_stats_data["challenges"] if item["challengeId"] == challenge["id"]),
                     None
                 )
-                if personal_stats and personal_stats["level"] not in ["MASTER", "GRANDMASTER", "CHALLENGER"]:
-                    self.uncompleted_count += 1
-                    self.process_single_challenge(challenge_name)
+                highest_threshold = self.get_highest_threshold(challenge["thresholds"])
+                if personal_stats:
+                    current_level = personal_stats["level"]
+                    highest_tier = list(highest_threshold.keys())[0] if highest_threshold else None
 
-    def process_single_challenge(self, challenge_name):
+                    # Only count as uncompleted if the current level is BELOW the highest possible tier
+                    if highest_tier and (current_level != highest_tier and current_level != "GRANDMASTER" and current_level != "CHALLENGER"):
+                        self.uncompleted_count += 1
+                        self.process_single_challenge(challenge_name, puuid)
+
+    def process_single_challenge(self, challenge_name, puuid):
         """ Prints challenge info for a single predefined challenge """
         if not self.all_challenges_data or not self.personal_stats_data:
             print("Error: Data not fetched properly.")
@@ -159,7 +166,6 @@ class Challenge:
 
         highest_tier = list(highest_threshold.keys())[0]
         highest_value = list(highest_threshold.values())[0]
-
         # Find the user's stats for this challenge
         personal_stats = next(
             (item for item in self.personal_stats_data["challenges"] if item["challengeId"] == challenge_id),
@@ -172,11 +178,11 @@ class Challenge:
             missing_until_max = "COMPLETED" if (current_level == highest_tier or current_level in ["GRANDMASTER", "MASTER", "CHALLENGER"]) else highest_value - current_value
 
             print("\n🔹 Challenge Info:")
+            print(f"👊 RiotID: {get_RiotID(puuid)}")
             print(f"📌 Description: {challenge_description}")
             print(f"🏆 Name: {challenge_name}")
-            print(f"⭐ Highest Threshold: {highest_tier} - {highest_value}")
-            print(f"🎖 Current Level: {current_level}")
-            print(f"📊 Current Value: {current_value}")
+            print(f"⭐ Highest Level: {highest_tier} - {highest_value}")
+            print(f"🎖 Current Level: {current_level} - {current_value}")
             print(f"⏳ Missing Until Max Level: {missing_until_max}\n")
 
     def get_highest_threshold(self, thresholds):
