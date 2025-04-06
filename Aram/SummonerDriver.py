@@ -11,5 +11,4 @@ def get_RiotID(puuid):
         tagLine = summoner_url_data.get("tagLine")
         return(f"{gameName}#{tagLine}")
     except requests.exceptions.JSONDecodeError:
-        print("Error: API Response is not valid JSON")
-        return
+        return("Error: API Response is not valid JSON")

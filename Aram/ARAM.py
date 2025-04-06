@@ -34,5 +34,3 @@ print("----------------------------------------------------------------------")
 Challenge().get_uncompleted()
 """
 print("----------------------------------------------------------------------")
-
-Challenge(ARAMWarrior.DoubleDecimation).get_challenge_ranking()

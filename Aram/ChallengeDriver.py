@@ -4,14 +4,12 @@ import json
 from api_values import API_KEY, PUUID
 from SummonerDriver import get_RiotID
 
-
 @dataclass
 class ARAMKeystones:
     ARAMChampion = "ARAM Champion"
     ARAMFinesse = "ARAM Finesse"
     ARAMWarrior = "ARAM Warrior"
     ARAMAuthority = "ARAM Authority"
-
 
 @dataclass
 class ARAMWarrior:
@@ -24,7 +22,6 @@ class ARAMWarrior:
     FarmChampionsNotMinions = "Farm Champions Not Minions"
     SoloCarry = "Solo Carry"
 
-
 @dataclass
 class ARAMFinesse:
     AnotherDayAnotherBullseye = "Another Day, Another Bullseye"
@@ -33,7 +30,6 @@ class ARAMFinesse:
     FreeMoney = "Free Money"
     FreeTicketToBase = "Free Ticket to Base"
     PopGoesThePoro = "Pop Goes the Poro"
-
 
 @dataclass
 class ARAMChampion:
@@ -248,13 +244,10 @@ class Challenge:
         print(f"\n📊 Rankings for Challenge: {self.challenge_name}")
         for i, entry in enumerate(rankings, 1):
             print(f"{i}. {entry['RiotID']} ({entry['Name']}) - {self.get_colored_tier(entry['Level'])} - {entry['Value']}")
-
-
         return rankings
     
     def get_colored_tier(self, tier_name: str) -> str:
         return getattr(ChallengeTiers, tier_name, tier_name)
-
 
     def get_highest_threshold(self, thresholds):
         """ Retrieves the highest challenge tier from raw tier names """
