@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import requests
 import json
-from api_values import API_KEY
+from api_values import API_KEY, PUUID
 from SummonerDriver import get_RiotID
 
 
@@ -48,14 +48,17 @@ class ARAMChampion:
 
 @dataclass
 class ChallengeTiers:
-    IRON = "IRON"
-    BRONZE = "BRONZE"
-    SILVER = "SILVER"
-    GOLD = "GOLD"
-    PLATINUM = "PLATINUM"
-    DIAMOND = "DIAMOND"
-    MASTER = "MASTER"
-    ALL = ["IRON", "BRONZE", "SILVER", "GOLD", "PLATINUM", "DIAMOND", "MASTER"]
+    IRON = "\033[38;5;94mIRON\033[0m"       # Brown-ish
+    BRONZE = "\033[38;5;166mBRONZE\033[0m"   # Orange
+    SILVER = "\033[38;5;250mSILVER\033[0m"   # Light gray/white
+    GOLD = "\033[38;5;220mGOLD\033[0m"       # Yellow/gold
+    PLATINUM = "\033[38;5;42mPLATINUM\033[0m" # Green
+    DIAMOND = "\033[38;5;33mDIAMOND\033[0m"  # Blue
+    MASTER = "\033[38;5;135mMASTER\033[0m"   # Purple
+    #GRANDMASTER = "\033[38;5;197mGRANDMASTER\033[0m"  # Crimson Red (used in LoL borders)
+    #CHALLENGER = "\033[38;5;226mCHALLENGER\033[0m"    # Bright Gold (like the Challenger crest)
+    UNRANKED = "\033[38;5;240mUNRANKED\033[0m"   # Dim gray for unranked
+
 
 
 class Challenge:
@@ -149,7 +152,7 @@ class Challenge:
         """ Prints challenge info for a single predefined challenge """
         if not self.all_challenges_data or not self.personal_stats_data:
             print("Error: Data not fetched properly.")
-            return
+            return 
 
         challenge = next(
             (item for item in self.all_challenges_data if item["localizedNames"]["en_US"]["name"] == challenge_name),
@@ -181,14 +184,85 @@ class Challenge:
             print(f"👊 RiotID: {get_RiotID(puuid)}")
             print(f"📌 Description: {challenge_description}")
             print(f"🏆 Name: {challenge_name}")
-            print(f"⭐ Highest Level: {highest_tier} - {highest_value}")
-            print(f"🎖 Current Level: {current_level} - {current_value}")
+            print(f"⭐ Highest Level: {self.get_colored_tier(highest_tier)} - {highest_value}")
+            print(f"🎖 Current Level: {self.get_colored_tier(current_level)} - {current_value}")
             print(f"⏳ Missing Until Max Level: {missing_until_max}\n")
+    
+    def get_challenge_ranking(self):
+        if not self.challenge_name:
+            print("⚠️ No challenge name specified.")
+            return
+
+        rankings = []
+        puuid_dict = {k: v for k, v in vars(PUUID).items() if not k.startswith("__")}
+
+        # Fetch challenge config once using any valid puuid
+        self.fetch_all_data(next(iter(puuid_dict.values())))
+
+        # Find the challenge ID based on the name
+        challenge = next(
+            (item for item in self.all_challenges_data if item["localizedNames"]["en_US"]["name"] == self.challenge_name),
+            None
+        )
+
+        if not challenge:
+            print(f"⚠️ Challenge '{self.challenge_name}' not found.")
+            return
+
+        challenge_id = challenge["id"]
+
+        for name, puuid in puuid_dict.items():
+            url = f"https://euw1.api.riotgames.com/lol/challenges/v1/player-data/{puuid}?api_key={API_KEY}"
+            response = requests.get(url)
+            if response.status_code != 200:
+                print(f"⚠️ Failed to fetch data for {name}")
+                continue
+
+            try:
+                player_data = response.json()
+            except requests.exceptions.JSONDecodeError:
+                print(f"⚠️ Invalid JSON for {name}")
+                continue
+
+            challenge_stats = next(
+                (c for c in player_data["challenges"] if c["challengeId"] == challenge_id),
+                None
+            )
+
+            if challenge_stats:
+                value = challenge_stats.get("value", 0)
+                level = challenge_stats.get("level", "UNRANKED")
+            else:
+                value = 0
+                level = "UNRANKED"
+
+            rankings.append({
+                "Name": name,
+                "RiotID": get_RiotID(puuid),
+                "Value": value,
+                "Level": level
+            })
+
+        rankings.sort(key=lambda x: x["Value"], reverse=True)
+
+        print(f"\n📊 Rankings for Challenge: {self.challenge_name}")
+        for i, entry in enumerate(rankings, 1):
+            print(f"{i}. {entry['RiotID']} ({entry['Name']}) - {self.get_colored_tier(entry['Level'])} - {entry['Value']}")
+
+
+        return rankings
+    
+    def get_colored_tier(self, tier_name: str) -> str:
+        return getattr(ChallengeTiers, tier_name, tier_name)
+
 
     def get_highest_threshold(self, thresholds):
-        """ Retrieves the highest challenge tier """
-        available_tiers = [tier for tier in ChallengeTiers.ALL if tier in thresholds]
+        """ Retrieves the highest challenge tier from raw tier names """
+        ordered_tiers = list(vars(ChallengeTiers).keys())
+        available_tiers = [tier for tier in thresholds.keys() if tier in ordered_tiers]
         if available_tiers:
-            highest_tier = max(available_tiers, key=lambda tier: ChallengeTiers.ALL.index(tier))
+            highest_tier = max(available_tiers, key=lambda t: ordered_tiers.index(t))
             return {highest_tier: thresholds[highest_tier]}
         return None
+
+

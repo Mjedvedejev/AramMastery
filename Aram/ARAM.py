@@ -1,5 +1,5 @@
 from ChallengeDriver import ARAMChampion, ARAMFinesse, ARAMKeystones, ARAMWarrior, ChallengeTiers, Challenge
-from api_values import PUUID_Fluf, PUUID_Me, PUUID_Jan, PUUID_Pezlar
+from api_values import PUUID
 from SummonerDriver import get_RiotID
 # Example challenge query
 """
@@ -34,9 +34,5 @@ print("----------------------------------------------------------------------")
 Challenge().get_uncompleted()
 """
 print("----------------------------------------------------------------------")
-Challenge(ARAMKeystones.ARAMAuthority).get(PUUID_Fluf)
-print("----------------------------------------------------------------------")
-Challenge(ARAMKeystones.ARAMAuthority).get(PUUID_Me)
-print("----------------------------------------------------------------------")
-Challenge(ARAMKeystones.ARAMAuthority).get(PUUID_Pezlar)
-print("----------------------------------------------------------------------")
+
+Challenge(ARAMWarrior.DoubleDecimation).get_challenge_ranking()
