@@ -76,18 +76,95 @@ class Challenge:
         self.process_single_challenge(self.challenge_name, puuid)
 
     def get_completed(self, puuid):
-        """ Fetches & processes only completed ARAM challenges and counts them """
+        """ Fetches and returns all completed ARAM challenges as structured data """
         self.fetch_all_data(puuid)
         self.completed_count = 0
-        self.process_completed_challenges(puuid)
-        print(f"✅ Completed Challenges: {self.completed_count}")
+        results = []
 
-    def get_uncompleted(self,puuid):
-        """ Fetches & processes only uncompleted ARAM challenges and counts them """
+        if not self.all_challenges_data or not self.personal_stats_data:
+            print("Error: Data not fetched properly.")
+            return results
+
+        for challenge in self.all_challenges_data:
+            challenge_name = challenge["localizedNames"]["en_US"]["name"]
+            challenge_description = challenge["localizedNames"]["en_US"]["description"]
+            challenge_id = challenge["id"]
+
+            if challenge_name in self.PREDEFINED_CHALLENGES.values():
+                personal_stats = next(
+                    (item for item in self.personal_stats_data["challenges"] if item["challengeId"] == challenge_id),
+                    None
+                )
+                highest_threshold = self.get_highest_threshold(challenge["thresholds"])
+                if personal_stats:
+                    current_level = personal_stats["level"]
+                    current_value = personal_stats["value"]
+                    highest_tier = list(highest_threshold.keys())[0] if highest_threshold else None
+                    highest_value = list(highest_threshold.values())[0] if highest_threshold else None
+
+                    # Count as completed if current level is MAX or above (Master+)
+                    if current_level in ["MASTER", "GRANDMASTER", "CHALLENGER"] or current_level == highest_tier:
+                        self.completed_count += 1
+                        results.append({
+                            "riot_id": get_RiotID(puuid),
+                            "name": challenge_name,
+                            "description": challenge_description,
+                            "current_level": current_level,
+                            "current_value": current_value,
+                            "highest_level": highest_tier,
+                            "highest_value": highest_value,
+                            "missing_until_max": 0  # Completed
+                        })
+
+        print(f"✅ Completed Challenges: {self.completed_count}")
+        return results
+
+
+    def get_uncompleted(self, puuid):
+        """ Fetches and returns all uncompleted ARAM challenges as structured data """
         self.fetch_all_data(puuid)
         self.uncompleted_count = 0
-        self.process_uncompleted_challenges(puuid)
+        results = []
+
+        if not self.all_challenges_data or not self.personal_stats_data:
+            print("Error: Data not fetched properly.")
+            return results
+
+        for challenge in self.all_challenges_data:
+            challenge_name = challenge["localizedNames"]["en_US"]["name"]
+            challenge_description = challenge["localizedNames"]["en_US"]["description"]
+            challenge_id = challenge["id"]
+
+            if challenge_name in self.PREDEFINED_CHALLENGES.values():
+                personal_stats = next(
+                    (item for item in self.personal_stats_data["challenges"] if item["challengeId"] == challenge_id),
+                    None
+                )
+                highest_threshold = self.get_highest_threshold(challenge["thresholds"])
+                if personal_stats:
+                    current_level = personal_stats["level"]
+                    current_value = personal_stats["value"]
+                    highest_tier = list(highest_threshold.keys())[0] if highest_threshold else None
+                    highest_value = list(highest_threshold.values())[0] if highest_threshold else None
+
+                    # Only include if not yet completed
+                    if highest_tier and (current_level != highest_tier and current_level not in ["GRANDMASTER", "CHALLENGER"]):
+                        self.uncompleted_count += 1
+                        missing_until_max = highest_value - current_value
+
+                        results.append({
+                            "riot_id": get_RiotID(puuid),
+                            "name": challenge_name,
+                            "description": challenge_description,
+                            "current_level": current_level,
+                            "current_value": current_value,
+                            "highest_level": highest_tier,
+                            "highest_value": highest_value,
+                            "missing_until_max": missing_until_max
+                        })
         print(f"❌ Uncompleted Challenges: {self.uncompleted_count}")
+        return results
+
 
     def fetch_all_data(self, puuid):
         """ Fetches challenge configs & user stats in a single API request """
@@ -246,8 +323,24 @@ class Challenge:
             print(f"{i}. {entry['RiotID']} ({entry['Name']}) - {self.get_colored_tier(entry['Level'])} - {entry['Value']}")
         return rankings
     
-    def get_colored_tier(self, tier_name: str) -> str:
-        return getattr(ChallengeTiers, tier_name, tier_name)
+    def get_colored_tier(self, tier: str, html: bool = False) -> str:
+        colors = {
+            "IRON": "#776e65",
+            "BRONZE": "#cd7f32",
+            "SILVER": "#c0c0c0",
+            "GOLD": "#ffd700",
+            "PLATINUM": "#00bfff",
+            "DIAMOND": "#b9f2ff",
+            "MASTER": "#ff00ff",
+            "GRANDMASTER": "#ff3030",
+            "CHALLENGER": "#00ffcc"
+        }
+
+        if html:
+            color = colors.get(tier.upper(), "white")
+            return f'<span style="color: {color}; font-weight: bold;">{tier}</span>'
+        else:
+            return tier  # plain fallback
 
     def get_highest_threshold(self, thresholds):
         """ Retrieves the highest challenge tier from raw tier names """
