@@ -1,4 +1,4 @@
-from api_values import API_KEY
+from Challenge.Api_Values.api_values import API_KEY
 import requests
 
 

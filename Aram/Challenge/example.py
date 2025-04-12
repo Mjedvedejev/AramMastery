@@ -1,6 +1,6 @@
-from ChallengeDriver import ARAMChampion, ARAMFinesse, ARAMKeystones, ARAMWarrior, ChallengeTiers, Challenge
-from api_values import PUUID
-from SummonerDriver import get_RiotID
+from Challenge.Drivers.ChallengeDriver import ARAMChampion, ARAMFinesse, ARAMKeystones, ARAMWarrior, ChallengeTiers, Challenge, ARENAChampion
+from Challenge.Drivers.NotepadDriver import Notepad, Notepads
+from Challenge.Api_Values.api_values import PUUID, API_KEY
 # Example challenge query
 """
 Challenge(ARAMFinesse.AnotherDayAnotherBullseye).get()
@@ -30,5 +30,9 @@ Challenge(ARAMKeystones.ARAMChampion).get()
 Challenge(ARAMKeystones.ARAMFinesse).get()
 Challenge(ARAMKeystones.ARAMWarrior).get()
 Challenge().get_completed(PUUID.Me)
-Challenge().get_uncompleted(PUUID.Me)
 """
+
+
+Notepad(Notepads.ArenaWin).add_entry("Bel'Veth")
+
+

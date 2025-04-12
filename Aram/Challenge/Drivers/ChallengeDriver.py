@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 import requests
 import json
-from api_values import API_KEY, PUUID
-from SummonerDriver import get_RiotID
+from Challenge.Api_Values.api_values import API_KEY, PUUID
+from Challenge.Drivers.SummonerDriver import get_RiotID
 
 @dataclass
 class ARAMKeystones:
@@ -40,6 +40,13 @@ class ARAMChampion:
     ActiveParticipant = "Active Participant"
     CantTouchThis = "Can't Touch This"
     NARAM = "NA-RAM"
+
+class ARENAChampion:
+    ArenaChampion = "Arena Champion"
+    ArenaChampionOcean = "Arena Champion Ocean"
+    AdaptToAllSituations = "Adapt to All Situations"
+
+
 
 
 @dataclass

@@ -1,6 +1,6 @@
 import streamlit as st
-from ChallengeDriver import Challenge, ARAMKeystones, ARAMWarrior, ARAMFinesse, ARAMChampion
-from api_values import PUUID
+from Challenge.Drivers.ChallengeDriver import Challenge, ARAMKeystones, ARAMWarrior, ARAMFinesse, ARAMChampion
+from Challenge.Api_Values.api_values import PUUID
 import pandas as pd
 
 st.set_page_config(page_title="ARAM Challenge Tracker", layout="centered")
