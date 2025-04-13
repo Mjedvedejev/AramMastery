@@ -1,4 +1,4 @@
-from Challenge.Drivers.ChallengeDriver import ARAMChampion, ARAMFinesse, ARAMKeystones, ARAMWarrior, ChallengeTiers, Challenge, ARENAChampion
+from Challenge.Drivers.ChallengeDriver import ARAMChampion, ARAMFinesse, Keystones, ARAMWarrior, ChallengeTiers, Challenge, ARENAChampion, MachineHuntingMercenary
 from Challenge.Drivers.NotepadDriver import Notepad, Notepads
 from Challenge.Api_Values.api_values import PUUID, API_KEY
 # Example challenge query
@@ -33,6 +33,6 @@ Challenge().get_completed(PUUID.Me)
 """
 
 
-Notepad(Notepads.ArenaWin).add_entry("Bel'Veth")
-
+Notepad(Notepads.ArenaPlay).add_entry("Jhin")
+#Notepad(Notepads.ArenaPlay).get_missing_champions()
 

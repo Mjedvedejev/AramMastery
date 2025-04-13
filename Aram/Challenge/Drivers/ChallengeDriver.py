@@ -5,11 +5,13 @@ from Challenge.Api_Values.api_values import API_KEY, PUUID
 from Challenge.Drivers.SummonerDriver import get_RiotID
 
 @dataclass
-class ARAMKeystones:
+class Keystones:
     ARAMChampion = "ARAM Champion"
     ARAMFinesse = "ARAM Finesse"
     ARAMWarrior = "ARAM Warrior"
     ARAMAuthority = "ARAM Authority"
+    ArenaChampion = "Arena Champion"
+    MachineHuntingMercenary = "Machine-Hunting Mercenary"
 
 @dataclass
 class ARAMWarrior:
@@ -41,13 +43,16 @@ class ARAMChampion:
     CantTouchThis = "Can't Touch This"
     NARAM = "NA-RAM"
 
+@dataclass
 class ARENAChampion:
-    ArenaChampion = "Arena Champion"
     ArenaChampionOcean = "Arena Champion Ocean"
     AdaptToAllSituations = "Adapt to All Situations"
 
-
-
+@dataclass
+class MachineHuntingMercenary:
+    RoboRecal = "Robo Recall"
+    ProteanOverride = "Protean Override"
+    Mallfunction = "Malfunction"
 
 @dataclass
 class ChallengeTiers:
@@ -62,12 +67,11 @@ class ChallengeTiers:
     #CHALLENGER = "\033[38;5;226mCHALLENGER\033[0m"    # Bright Gold (like the Challenger crest)
     UNRANKED = "\033[38;5;240mUNRANKED\033[0m"   # Dim gray for unranked
 
-
-
 class Challenge:
     PREDEFINED_CHALLENGES = {
-        **vars(ARAMKeystones), **vars(ARAMWarrior),
-        **vars(ARAMFinesse), **vars(ARAMChampion)
+        **vars(Keystones), **vars(ARAMWarrior),
+        **vars(ARAMFinesse), **vars(ARAMChampion),
+        **vars(ARENAChampion), **vars(MachineHuntingMercenary)
     }
 
     def __init__(self, challenge_name=None):
@@ -123,7 +127,7 @@ class Challenge:
                             "missing_until_max": 0  # Completed
                         })
 
-        print(f"✅ Completed Challenges: {self.completed_count}")
+        print(f"Completed Challenges: {self.completed_count}")
         return results
 
 
@@ -169,7 +173,7 @@ class Challenge:
                             "highest_value": highest_value,
                             "missing_until_max": missing_until_max
                         })
-        print(f"❌ Uncompleted Challenges: {self.uncompleted_count}")
+        print(f"Uncompleted Challenges: {self.uncompleted_count}")
         return results
 
 
@@ -240,7 +244,7 @@ class Challenge:
         )
 
         if not challenge:
-            print(f"⚠️ Challenge '{challenge_name}' not found.")
+            print(f"Challenge '{challenge_name}' not found.")
             return
 
         challenge_description = challenge["localizedNames"]["en_US"]["description"]
@@ -270,7 +274,7 @@ class Challenge:
     
     def get_challenge_ranking(self):
         if not self.challenge_name:
-            print("⚠️ No challenge name specified.")
+            print("No challenge name specified.")
             return
 
         rankings = []
@@ -286,7 +290,7 @@ class Challenge:
         )
 
         if not challenge:
-            print(f"⚠️ Challenge '{self.challenge_name}' not found.")
+            print(f"Challenge '{self.challenge_name}' not found.")
             return
 
         challenge_id = challenge["id"]
@@ -295,13 +299,13 @@ class Challenge:
             url = f"https://euw1.api.riotgames.com/lol/challenges/v1/player-data/{puuid}?api_key={API_KEY}"
             response = requests.get(url)
             if response.status_code != 200:
-                print(f"⚠️ Failed to fetch data for {name}")
+                print(f"Failed to fetch data for {name}")
                 continue
 
             try:
                 player_data = response.json()
             except requests.exceptions.JSONDecodeError:
-                print(f"⚠️ Invalid JSON for {name}")
+                print(f"Invalid JSON for {name}")
                 continue
 
             challenge_stats = next(
@@ -325,7 +329,7 @@ class Challenge:
 
         rankings.sort(key=lambda x: x["Value"], reverse=True)
 
-        print(f"\n📊 Rankings for Challenge: {self.challenge_name}")
+        print(f"\nRankings for Challenge: {self.challenge_name}")
         for i, entry in enumerate(rankings, 1):
             print(f"{i}. {entry['RiotID']} ({entry['Name']}) - {self.get_colored_tier(entry['Level'])} - {entry['Value']}")
         return rankings

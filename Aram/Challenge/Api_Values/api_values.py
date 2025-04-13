@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-API_KEY = "RGAPI-30e62b8c-1480-4441-b5db-d9134af6ddbf"
+API_KEY = "RGAPI-567ef268-fc8a-4add-a00c-bfe5c3e0ba8b"
 
 @dataclass 
 class PUUID:

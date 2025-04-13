@@ -14,11 +14,14 @@ Lissandra
 Malphite
 Master Yi
 Morgana
+Rakan
 Rammus
 Rengar
+Rumble
 Samira
 Sejuani
 Sett
+Taric
 Teemo
 Udyr
 Viego

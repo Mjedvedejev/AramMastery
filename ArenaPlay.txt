@@ -14,6 +14,8 @@ Brand
 Braum
 Briar
 Darius
+Diana
+Dr. Mundo
 Draven
 Ekko
 Fiddlesticks
@@ -32,6 +34,7 @@ Janna
 Jarvan IV
 Jax
 Jayce
+Jhin
 K'Sante
 Kai'Sa
 Karma 
@@ -53,6 +56,7 @@ Milio
 Miss Fortune
 Mordekaiser
 Morgana
+Naafiri
 Nasus
 Nautilius
 Nidalee
@@ -61,15 +65,18 @@ Olaf
 Ornn
 Pantheon
 Pyke
+Rakan
 Rammus
 Rek'Sai
 Rell
 Renekton
 Rengar
 Riven
+Rumble
 Ryze
 Samira
 Sejuani
+Senna
 Sett
 Shaco
 Shen
@@ -81,8 +88,12 @@ Soraka
 Sylas
 Tahm Kench
 Talon
+Taric
 Teemo
 Thresh
+Tryndamere
+Twisted Fate
+Twitch
 Udyr
 Urgot
 Varus
@@ -96,6 +107,7 @@ Warwick
 Wukong
 Xayah
 Xin Zhao
+Yasuo
 Yorick
 Zac
 Zilean
